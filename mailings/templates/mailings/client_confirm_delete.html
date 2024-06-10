@@ -1,0 +1,12 @@
+{% extends 'mailings/base.html' %}
+{% block title %}Delete Client{% endblock %}
+
+{% block content %}
+<h2>Delete Client</h2>
+<form method="post">
+    {% csrf_token %}
+    <p>Are you sure you want to delete "{{ object }}"?</p>
+    <button type="submit" class="btn btn-danger">Yes, delete</button>
+    <a href="{% url 'mailings:client_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
