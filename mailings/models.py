@@ -1,4 +1,8 @@
+from django.conf import settings
 from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 NULLABLE = {'blank': True, 'null': True}
 
@@ -8,6 +12,7 @@ class Client(models.Model):
     surname = models.CharField(max_length=255, verbose_name="Фамилия")
     email = models.EmailField(unique=True, verbose_name="Email")
     comments = models.TextField(**NULLABLE, verbose_name="Комментарий")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
 
     class Meta:
         verbose_name = "Клиент"
@@ -20,6 +25,7 @@ class Client(models.Model):
 class Message(models.Model):
     subject = models.CharField(max_length=255, verbose_name="Тема письма")
     body = models.TextField(verbose_name="Тело письма")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
 
     class Meta:
         verbose_name = "Сообщение"
@@ -54,10 +60,14 @@ class Mailing(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=CREATED, verbose_name="Статус")
     message = models.OneToOneField(Message, on_delete=models.CASCADE, verbose_name="Сообщение")
     clients = models.ManyToManyField(Client, verbose_name="Клиенты")
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, default=1)
 
     class Meta:
         verbose_name = "Рассылка"
         verbose_name_plural = "Рассылки"
+        permissions = [
+            ("can_disable_mailing", "Can disable mailing"),
+        ]
 
     def __str__(self):
         return f"Mailing {self.name} - {self.status}"

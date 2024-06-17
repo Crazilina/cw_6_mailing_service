@@ -1,6 +1,14 @@
+import random
+from .services import get_cached_home_data
+from config import settings
+
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+
 from .models import Client, Message, Mailing, MailingAttempt
 from .forms import ClientForm, MessageForm, MailingForm
 
@@ -8,29 +16,24 @@ from .forms import ClientForm, MessageForm, MailingForm
 class HomeListView(ListView):
     model = Client
     template_name = 'mailings/home.html'
-    context_object_name = 'clients'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['clients'] = Client.objects.order_by('name')
-        context['messages'] = Message.objects.order_by('-id')
-        context['mailings'] = Mailing.objects.order_by('-id')
-        context['mailing_attempts'] = MailingAttempt.objects.order_by('-attempt_date_time')
-        context['recent_clients'] = Client.objects.order_by('-id')[:5]
-        context['recent_messages'] = Message.objects.order_by('-id')[:5]
-        context['recent_mailings'] = Mailing.objects.order_by('-id')[:5]
+        cached_data = get_cached_home_data()
+
+        context.update(cached_data)
         context['user'] = self.request.user
         return context
 
 
 # Clients
-class ClientListView(ListView):
+class ClientListView(LoginRequiredMixin, ListView):
     model = Client
     template_name = 'mailings/client_list.html'
     context_object_name = 'clients'
 
     def get_queryset(self):
-        return Client.objects.order_by('name')
+        return Client.objects.filter(owner=self.request.user).order_by('name')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -38,13 +41,14 @@ class ClientListView(ListView):
         return context
 
 
-class ClientCreateView(CreateView):
+class ClientCreateView(LoginRequiredMixin, CreateView):
     model = Client
     form_class = ClientForm
     template_name = 'mailings/client_form.html'
     success_url = reverse_lazy('mailings:client_list')
 
     def form_valid(self, form):
+        form.instance.owner = self.request.user
         response = super().form_valid(form)
         messages.success(self.request, f'Client "{form.instance.name} {form.instance.surname}" successfully created.')
         return response
@@ -55,11 +59,14 @@ class ClientCreateView(CreateView):
         return context
 
 
-class ClientUpdateView(UpdateView):
+class ClientUpdateView(LoginRequiredMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name = 'mailings/client_form.html'
     success_url = reverse_lazy('mailings:client_list')
+
+    def get_queryset(self):
+        return Client.objects.filter(owner=self.request.user)
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -83,15 +90,18 @@ class ClientDetailView(DetailView):
         return context
 
 
-class ClientDeleteView(DeleteView):
+class ClientDeleteView(LoginRequiredMixin, DeleteView):
     model = Client
     template_name = 'mailings/client_confirm_delete.html'
     success_url = reverse_lazy('mailings:client_list')
 
+    def get_queryset(self):
+        return Client.objects.filter(owner=self.request.user)
+
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
         response = super().delete(request, *args, **kwargs)
-        messages.success(self.request, f'Client {self.object.name} {self.object.surname} successfully deleted.')
+        messages.success(self.request, f'Client "{self.object.name} {self.object.surname}" successfully deleted.')
         return response
 
     def get_context_data(self, **kwargs):
@@ -101,13 +111,13 @@ class ClientDeleteView(DeleteView):
 
 
 # Messages
-class MessageListView(ListView):
+class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     template_name = 'mailings/message_list.html'
     context_object_name = 'messages'
 
     def get_queryset(self):
-        return Message.objects.order_by('-id')
+        return Message.objects.filter(owner=self.request.user).order_by('-id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -115,15 +125,16 @@ class MessageListView(ListView):
         return context
 
 
-class MessageCreateView(CreateView):
+class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     form_class = MessageForm
     template_name = 'mailings/message_form.html'
     success_url = reverse_lazy('mailings:message_list')
 
     def form_valid(self, form):
+        form.instance.owner = self.request.user
         response = super().form_valid(form)
-        messages.success(self.request, f'Message {form.instance.subject} successfully created.')
+        messages.success(self.request, f'Message "{form.instance.subject}" successfully created.')
         return response
 
     def get_context_data(self, **kwargs):
@@ -132,11 +143,14 @@ class MessageCreateView(CreateView):
         return context
 
 
-class MessageUpdateView(UpdateView):
+class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
     form_class = MessageForm
     template_name = 'mailings/message_form.html'
     success_url = reverse_lazy('mailings:message_list')
+
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -160,10 +174,13 @@ class MessageDetailView(DetailView):
         return context
 
 
-class MessageDeleteView(DeleteView):
+class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     template_name = 'mailings/message_confirm_delete.html'
     success_url = reverse_lazy('mailings:message_list')
+
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -178,13 +195,13 @@ class MessageDeleteView(DeleteView):
 
 
 # Mailings
-class MailingListView(ListView):
+class MailingListView(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = 'mailings/mailing_list.html'
     context_object_name = 'mailings'
 
     def get_queryset(self):
-        return Mailing.objects.order_by('-id')
+        return Mailing.objects.all().order_by('-id')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -192,15 +209,25 @@ class MailingListView(ListView):
         return context
 
 
-class MailingCreateView(CreateView):
+class ActiveMailingListView(ListView):
+    model = Mailing
+    template_name = 'mailings/active_mailing_list.html'
+    context_object_name = 'mailings'
+
+    def get_queryset(self):
+        return Mailing.objects.filter(status='started')
+
+
+class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
     form_class = MailingForm
     template_name = 'mailings/mailing_form.html'
     success_url = reverse_lazy('mailings:mailing_list')
 
     def form_valid(self, form):
+        form.instance.owner = self.request.user
         response = super().form_valid(form)
-        messages.success(self.request, f'Mailing {form.instance.name} successfully created.')
+        messages.success(self.request, f'Mailing "{form.instance}" successfully created.')
         return response
 
     def get_context_data(self, **kwargs):
@@ -209,11 +236,15 @@ class MailingCreateView(CreateView):
         return context
 
 
-class MailingUpdateView(UpdateView):
+class MailingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
     model = Mailing
     form_class = MailingForm
     template_name = 'mailings/mailing_form.html'
     success_url = reverse_lazy('mailings:mailing_list')
+    permission_required = 'mailings.change_mailing'
+
+    def get_queryset(self):
+        return Mailing.objects.filter(owner=self.request.user)
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -226,7 +257,7 @@ class MailingUpdateView(UpdateView):
         return context
 
 
-class MailingDetailView(DetailView):
+class MailingDetailView(LoginRequiredMixin, DetailView):
     model = Mailing
     template_name = 'mailings/mailing_detail.html'
     context_object_name = 'mailing'
@@ -238,10 +269,14 @@ class MailingDetailView(DetailView):
         return context
 
 
-class MailingDeleteView(DeleteView):
+class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
     model = Mailing
     template_name = 'mailings/mailing_confirm_delete.html'
     success_url = reverse_lazy('mailings:mailing_list')
+    permission_required = 'mailings.delete_mailing'
+
+    def get_queryset(self):
+        return Mailing.objects.filter(owner=self.request.user)
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -255,7 +290,7 @@ class MailingDeleteView(DeleteView):
         return context
 
 
-class MailingAttemptListView(ListView):
+class MailingAttemptListView(LoginRequiredMixin, ListView):
     model = MailingAttempt
     template_name = 'mailings/mailing_attempt_list.html'
     context_object_name = 'mailing_attempts'
@@ -269,7 +304,7 @@ class MailingAttemptListView(ListView):
         return context
 
 
-class MailingAttemptDetailView(DetailView):
+class MailingAttemptDetailView(LoginRequiredMixin, DetailView):
     model = MailingAttempt
     template_name = 'mailings/mailing_attempt_detail.html'
     context_object_name = 'attempt'
@@ -280,3 +315,16 @@ class MailingAttemptDetailView(DetailView):
         return context
 
 
+@permission_required('mailings.can_disable_mailing')
+def toggle_mailing_status(request, mailing_id):
+    mailing = get_object_or_404(Mailing, id=mailing_id)
+
+    if mailing.status == Mailing.STARTED:
+        mailing.status = Mailing.COMPLETED
+        messages.success(request, f'Mailing "{mailing.name}" has been completed.')
+    else:
+        mailing.status = Mailing.STARTED
+        messages.success(request, f'Mailing "{mailing.name}" has been activated.')
+
+    mailing.save()
+    return redirect('mailings:mailing_list')

@@ -1,11 +1,11 @@
 {% extends 'mailings/base.html' %}
-{% block title %}Mailing Attempt Detail{% endblock %}
+{% block title %}Детали Попытки Рассылки{% endblock %}
 
 {% block content %}
-<h2>Mailing Attempt Detail</h2>
-<p>Mailing: {{ attempt.mailing }}</p>
-<p>Date and Time: {{ attempt.attempt_date_time }}</p>
-<p>Status: {{ attempt.status }}</p>
-<p>Response: {{ attempt.response }}</p>
-<a href="{% url 'mailing_attempt_list' %}">Back to Attempts</a>
+<h2>Детали Попытки Рассылки</h2>
+<p>Рассылка: {{ attempt.mailing }}</p>
+<p>Дата и Время: {{ attempt.attempt_date_time }}</p>
+<p>Статус: {{ attempt.status }}</p>
+<p>Ответ сервера: {{ attempt.server_response }}</p>
+<a href="{% url 'mailings:mailing_attempt_list' %}" class="btn btn-primary">Назад к Попыткам</a>
 {% endblock %}

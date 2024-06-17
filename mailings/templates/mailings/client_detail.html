@@ -1,13 +1,13 @@
 {% extends 'mailings/base.html' %}
-{% block title %}Client Detail{% endblock %}
+{% block title %}Детали Клиента{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Client Detail</h2>
-    <p><strong>Name:</strong> {{ client.name }}</p>
-    <p><strong>Surname:</strong> {{ client.surname }}</p>
+    <h2>Детали Клиента</h2>
+    <p><strong>Имя:</strong> {{ client.name }}</p>
+    <p><strong>Фамилия:</strong> {{ client.surname }}</p>
     <p><strong>Email:</strong> {{ client.email }}</p>
-    <p><strong>Comments:</strong> {{ client.comments }}</p>
-    <a href="{% url 'mailings:client_list' %}" class="btn btn-primary">Back to Clients</a>
+    <p><strong>Комментарии:</strong> {{ client.comments }}</p>
+    <a href="{% url 'mailings:client_list' %}" class="btn btn-primary">Назад к Клиентам</a>
 </div>
 {% endblock %}

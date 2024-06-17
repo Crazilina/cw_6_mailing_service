@@ -1,14 +1,17 @@
 {% extends 'mailings/base.html' %}
-{% block title %}Mailing Attempts{% endblock %}
+{% block title %}Попытки Рассылок{% endblock %}
 
 {% block content %}
-    <h2>Mailing Attempts</h2>
-    <a href="{% url 'mailings:home' %}" class="btn btn-outline-secondary">Home</a>
+    <h2>Попытки Рассылок</h2>
+    <a href="{% url 'mailings:home' %}" class="btn btn-outline-secondary">Домой</a>
     <ul class="list-group mt-3">
         {% for attempt in mailing_attempts %}
         <li class="list-group-item">
-            <strong>Attempt for mailing "{{ attempt.mailing.name }}"</strong> at {{ attempt.attempt_date_time }} - Status: {{ attempt.status }}
-            <br>Server Response: {{ attempt.server_response }}
+            <strong>Попытка для рассылки "{{ attempt.mailing.name }}"</strong> в {{ attempt.attempt_date_time }} - Статус: {{ attempt.status }}
+            <br>Ответ сервера: {{ attempt.server_response }}
+            <div class="mt-2">
+                <a href="{% url 'mailings:mailing_detail' attempt.mailing.pk %}" class="btn btn-info btn-sm">Просмотреть детали рассылки</a>
+            </div>
         </li>
         {% endfor %}
     </ul>

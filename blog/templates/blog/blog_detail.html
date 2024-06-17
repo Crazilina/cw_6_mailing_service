@@ -1,0 +1,19 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}{{ blogpost.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>{{ blogpost.title }}</h1>
+    <img src="{{ blogpost.image.url }}" class="img-fluid mb-3" alt="{{ blogpost.title }}">
+    <div>
+        {{ blogpost.content|safe }}
+    </div>
+    <p><small>Опубликовано: {{ blogpost.publication_date }}</small></p>
+    <p><small>Просмотров: {{ blogpost.views }}</small></p>
+    <div class="mt-5 mb-5">
+        <a href="{% url 'mailings:home' %}" class="btn btn-primary">На главную</a>
+        <a href="{% url 'blog:blog_list' %}" class="btn btn-secondary">Ко всем статьям</a>
+    </div>
+</div>
+{% endblock %}

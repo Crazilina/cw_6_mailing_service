@@ -16,9 +16,21 @@ class MessageAdmin(admin.ModelAdmin):
 
 @admin.register(Mailing)
 class MailingAdmin(admin.ModelAdmin):
-    list_display = ('start_date_time', 'periodicity', 'status')
-    search_fields = ('status',)
+    list_display = ('name', 'start_date_time', 'periodicity', 'status')
+    actions = ['disable_mailings', 'enable_mailings']
     list_filter = ('periodicity', 'status')
+
+    def disable_mailings(self, request, queryset):
+        queryset.update(status=Mailing.COMPLETED)
+        self.message_user(request, "Selected mailings have been disabled.")
+
+    disable_mailings.short_description = "Disable selected mailings"
+
+    def enable_mailings(self, request, queryset):
+        queryset.update(status=Mailing.STARTED)
+        self.message_user(request, "Selected mailings have been enabled.")
+
+    enable_mailings.short_description = "Enable selected mailings"
 
 
 @admin.register(MailingAttempt)

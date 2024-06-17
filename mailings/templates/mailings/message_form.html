@@ -1,12 +1,12 @@
 {% extends 'mailings/base.html' %}
-{% block title %}Create Message{% endblock %}
+{% block title %}{{ form.instance.pk|yesno:"Обновить сообщение,Создать сообщение" }}{% endblock %}
 
 {% block content %}
-<h2>Create Message</h2>
+<h2>{{ form.instance.pk|yesno:"Обновить сообщение,Создать сообщение" }}</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a class="btn btn-secondary" href="{% url 'mailings:message_list' %}">Cancel</a>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a class="btn btn-secondary" href="{% url 'mailings:message_list' %}">Отмена</a>
 </form>
 {% endblock %}

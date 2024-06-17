@@ -1,0 +1,17 @@
+{% extends 'mailings/base.html' %}
+{% block title %}Все статьи{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Все статьи</h2>
+    <ul class="list-group">
+        {% for post in blogposts %}
+        <li class="list-group-item">
+            <a href="{% url 'blog:blog_detail' post.pk %}">{{ post.title }}</a>
+            <p>{{ post.publication_date }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'mailings:home' %}" class="btn btn-primary mt-3">На главную</a>
+</div>
+{% endblock %}

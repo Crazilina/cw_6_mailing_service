@@ -1,12 +1,12 @@
 {% extends 'mailings/base.html' %}
-{% block title %}Create/Update Mailing{% endblock %}
+{% block title %}{% if form.instance.pk %}Обновить рассылку{% else %}Создать рассылку{% endif %}{% endblock %}
 
 {% block content %}
-<h2>Create/Update Mailing</h2>
+<h2>{% if form.instance.pk %}Обновить рассылку{% else %}Создать рассылку{% endif %}</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a class="btn btn-secondary" href="{% url 'mailings:mailing_list' %}">Cancel</a>
+    <button type="submit" class="btn btn-primary">{% if form.instance.pk %}Сохранить{% else %}Создать{% endif %}</button>
+    <a class="btn btn-secondary" href="{% url 'mailings:mailing_list' %}">Отмена</a>
 </form>
 {% endblock %}

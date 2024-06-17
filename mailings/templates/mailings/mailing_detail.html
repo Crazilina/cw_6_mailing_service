@@ -1,18 +1,18 @@
 {% extends 'mailings/base.html' %}
-{% block title %}Mailing Detail{% endblock %}
+{% block title %}Детали Рассылки{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Mailing Detail: {{ mailing.name }}</h2>
-    <p><strong>Start Date Time:</strong> {{ mailing.start_date_time }}</p>
-    <p><strong>Periodicity:</strong> {{ mailing.get_periodicity_display }}</p>
-    <p><strong>Status:</strong> {{ mailing.get_status_display }}</p>
-    <p><strong>Message:</strong> {{ message_body }}</p>
-    <p><strong>Clients:</strong> 
+    <h2>Детали Рассылки: {{ mailing.name }}</h2>
+    <p><strong>Дата и Время Начала:</strong> {{ mailing.start_date_time }}</p>
+    <p><strong>Периодичность:</strong> {{ mailing.get_periodicity_display }}</p>
+    <p><strong>Статус:</strong> {{ mailing.get_status_display }}</p>
+    <p><strong>Сообщение:</strong> {{ mailing.message.body }}</p>
+    <p><strong>Клиенты:</strong>
         {% for client in mailing.clients.all %}
             {{ client.name }} {{ client.surname }} ({{ client.email }}){% if not forloop.last %}, {% endif %}
         {% endfor %}
     </p>
-    <a href="{% url 'mailings:mailing_list' %}" class="btn btn-primary">Back to Mailings</a>
+    <a href="{% url 'mailings:mailing_list' %}" class="btn btn-primary">Назад к Рассылкам</a>
 </div>
 {% endblock %}
